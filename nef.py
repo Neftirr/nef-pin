@@ -1,5 +1,6 @@
 from pygame import *
 from random import randint
+from random import choice
 
 class GameSprite(sprite.Sprite):
     def __init__(self, img, x, y, w, h, speed):
@@ -19,13 +20,18 @@ class GameSprite(sprite.Sprite):
         return self.rect.collidepoint(x, y)
 
 class Player(GameSprite):
-    def update(self):
-        keys = key.get_pressed()
-        if keys[K_LEFT] and self.rect.x>5:
-            self.rect.x-=self.speed
-        if keys[K_RIGHT] and self.rect.x<700 - 5 - self.rect.width:
-            self.rect.x+=self.speed
-
+    def update1(self):
+        keys_pressed = key.get_pressed()
+        if keys_pressed[K_UP] and self.rect.y >5:
+            self.rect.y -= self.speed
+        if keys_pressed[K_DOWN] and self.rect.y < 500 - 80:
+            self.rect.y += self.speed
+    def update2(self):
+        keys_pressed = key.get_pressed()
+        if keys_pressed[K_w] and self.rect.y >5:
+            self.rect.y -= self.speed
+        if keys_pressed[K_s] and self.rect.y < 500 - 80:
+            self.rect.y += self.speed
 class Enemy(GameSprite):
     def update(self):
         global lost
@@ -36,47 +42,52 @@ class Enemy(GameSprite):
             self.speed = randint(1,3)
             lost +=1
 
-class ball (GameSprite):
+class Ball(GameSprite):
     def __init__(self, img, x, y, w, h, speed):
-        super().__init__(img, x, y, w, h, spedd)
-        self.speed.x = 0 
-        self.speed.y = 0
+        super().__init__(img, x, y, w, h, speed)
+        self.speed_x = 0 
+        self.speed_y = 0
 
-    def set_diretion(self, speed_x, speed_y):
-        self.speed.x = speed_x
-        self.speed.y = speed_y
+    def set_direction(self, speed_x, speed_y):
+        self.speed_x = speed_x
+        self.speed_y = speed_y
 
     def update(self):
         self.rect.x +=self.speed_x*self.speed
-        self.rect.x +=self.speed_y*self.speed
+        self.rect.y +=self.speed_y*self.speed
 
-    def check_direction(self, pl1, pl2)
-    global point_l, point_r
-    if self.rect.y <=-0:
-        self.speed_y*=-1
-    elif self.rect.y >=500-self.rect.height:
-        self.speef_y*=-1
-    elif self.rect.spritecollide(pl1.rect):
-        self.speed.x *= -1
-         elif self.rect.spritecollide(pl2.rect):
-        self.speed.x *= -1
+    def check_direction(self, pl1, pl2):
+        global point_l, point_r
+        if self.rect.y <=0:
+            self.speed_y*=-1
+        elif self.rect.y >=500-self.rect.height:
+            self.speed_y*=-1
+        elif self.rect.colliderect(pl1.rect):
+            self.speed_x *= -1
+        elif self.rect.colliderect(pl2.rect):
+            self.speed_x *= -1
 
-    elif self.rect.x <=0:
-        point_r += 1
-        self.rect.x = 700/2-self.rect.width/2  
-        self.rect.x = 700/2-self.rect.height/2  
+        elif self.rect.x <=0:
+            point_r += 1
+            self.rect.x = 700/2-self.rect.width/2  
+            self.rect.y = 500/2-self.rect.height/2  
+            self.set_direction(choice([-1,1]), choice([1,1]))
 
-     elif self.rect.x <=500-self.rect.width:
-        point_l += 1
-        self.rect.x = 700/2-self.rect.width/2  
-        self.rect.x = 700/2-self.rect.height/2  
+        elif self.rect.x >=700-self.rect.width:
+            point_l += 1
+            self.rect.x = 700/2-self.rect.width/2  
+            self.rect.y = 500/2-self.rect.height/2
+            self.set_direction(choice([-1,1]), choice([1,1]))
 
 
 point_l = 0
 point_r = 0
-direction []
+direction= [-1,1]
+ball = Ball('asteroid.png', 700/2-25, 500/2-25, 50,50,2)
+ball.set_direction(choice(direction), choice(direction))
 
-player  = Player('kur.png', 280, 400, 110, 100, 5)
+pl1 = Player('kur.png', 580, 200, 110, 100, 5)
+pl2 = Player('kur.png', 30, 30, 110, 100, 5)
 enemy_count = 5
 enemyes = sprite.Group()
 
@@ -92,15 +103,27 @@ mixer.music.play()
 
 clock = time.Clock()
 FPS = 60
-
 game = True
+
+speed_x = 4
+speed_y = 4
 
 while game:
 
     for e in event.get():
         if e.type == QUIT:
             game = False
+    
+
     window.blit(background, (0,0))
+    ball.update()
+    ball.check_direction(pl1, pl2)
+    ball.reset()
+    pl1.update1()
+    pl2.update2()
+    pl1.reset()
+    pl2.reset()
+
 
 
 
